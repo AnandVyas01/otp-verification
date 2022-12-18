@@ -2,6 +2,7 @@ const bcrypt = require('bcrypt');
 const _ = require('lodash');
 const axios = require('axios');
 const otpGenerator = require('otp-generator');
+const sgMail = require('@sendgrid/mail')
 
 const User = require('../models/usermodel');
 const OTP = require('../models/otpmodel');
@@ -28,6 +29,27 @@ const signUp = async (req,res) => {
     //accepting the number
     const number = req.body.number;
     console.log(Otp);
+
+    //send otp via email
+    //setting up api key
+    sgMail.setApiKey(process.env.SEND_GRID_API_KEY)
+    //message body and email address
+    const msg = {
+    to: `${number}`, // Change to your recipient
+    from: 'anand.xploresense@gmail.com', // Change to your verified sender
+    subject: 'YOUR OTP FOR VERIFICATION',
+    text: 'This is your one time password, do not disclose',
+    html: `'<strong>${Otp}</strong>'`,
+    }
+    //sending email
+    sgMail
+    .send(msg)
+    .then(() => {
+    console.log('Email sent')
+    })
+    .catch((error) => {
+    console.error(error)
+    })
 
     //create the collection 
     const otp = new OTP({
