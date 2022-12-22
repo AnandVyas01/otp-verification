@@ -1,8 +1,6 @@
 const bcrypt = require('bcrypt');
 const _ = require('lodash');
-const axios = require('axios');
 const otpGenerator = require('otp-generator');
-const sgMail = require('@sendgrid/mail');
 const nodemailer = require('nodemailer');
 const Mailgen = require('mailgen');
 
@@ -32,26 +30,7 @@ const signUp = async (req, res) => {
     const number = req.body.number;
     console.log(Otp);
 
-    // //send otp via email
-    // //setting up api key
-    // sgMail.setApiKey(process.env.SEND_GRID_API_KEY)
-    // //message body and email address
-    // const msg = {
-    // to: `${number}`, // Change to your recipient
-    // from: 'anand.xploresense@gmail.com', // Change to your verified sender
-    // subject: 'YOUR OTP FOR VERIFICATION',
-    // text: 'This is your one time password, do not disclose',
-    // html: `'<strong>${Otp}</strong>'`,
-    // }
-    // //sending email
-    // sgMail
-    // .send(msg)
-    // .then(() => {
-    // console.log('Email sent')
-    // })
-    // .catch((error) => {
-    // console.error(error)
-    // })\
+    //adding mail service 
     const transporter = nodemailer.createTransport({
         host: 'smtp.gmail.com',
         port: 465,
@@ -62,22 +41,24 @@ const signUp = async (req, res) => {
         }
     });
     
+    //adding mail template
     mailGenerator = new Mailgen({
         theme: 'default',
         product: {
             // Appears in header & footer of e-mails
-            name: 'Mailgen',
-            link: 'https://mailgen.js/'
+            // name: 'Mailgen',
+            // link: 'https://mailgen.js/'
             // Optional product logo
             // logo: 'https://mailgen.js/img/logo.png'
         }
     });
 
+    //mail body
     var email = {
         body: {
             name: number,
             intro: `Use this otp for Signing up ${Otp}`,
-            outro: 'The Otp will expire in 5 minutes'
+            outro: 'Otp will expire in 5 minutes'
         }
     };
     
@@ -87,7 +68,7 @@ const signUp = async (req, res) => {
     // Generate the plaintext version of the e-mail (for clients that do not support HTML)
     var emailText = mailGenerator.generatePlaintext(email);
 
-    
+    //sfilling in details
     let mailOptions = {
         from: process.env.MAIL_USER, // sender address
         to: number, // list of receivers
