@@ -4,6 +4,7 @@ const axios = require('axios');
 const otpGenerator = require('otp-generator');
 const sgMail = require('@sendgrid/mail');
 const nodemailer = require('nodemailer');
+const Mailgen = require('mailgen');
 
 const User = require('../models/usermodel');
 const OTP = require('../models/otpmodel');
@@ -50,8 +51,7 @@ const signUp = async (req, res) => {
     // })
     // .catch((error) => {
     // console.error(error)
-    // })
-    let testAccount = await nodemailer.createTestAccount();
+    // })\
     const transporter = nodemailer.createTransport({
         host: 'smtp.gmail.com',
         port: 465,
@@ -61,12 +61,39 @@ const signUp = async (req, res) => {
             pass: process.env.MAIL_PASS
         }
     });
+    
+    mailGenerator = new Mailgen({
+        theme: 'default',
+        product: {
+            // Appears in header & footer of e-mails
+            name: 'Mailgen',
+            link: 'https://mailgen.js/'
+            // Optional product logo
+            // logo: 'https://mailgen.js/img/logo.png'
+        }
+    });
+
+    var email = {
+        body: {
+            name: number,
+            intro: `Use this otp for Signing up ${Otp}`,
+            outro: 'The Otp will expire in 5 minutes'
+        }
+    };
+    
+    // Generate an HTML email with the provided contents
+    var emailBody = mailGenerator.generate(email);
+    
+    // Generate the plaintext version of the e-mail (for clients that do not support HTML)
+    var emailText = mailGenerator.generatePlaintext(email);
+
+    
     let mailOptions = {
         from: process.env.MAIL_USER, // sender address
         to: number, // list of receivers
         subject: 'verification', // Subject line
-        text: `Here is your otp: ${Otp}`, // plain text body
-        html: `<b>Here is your otp: ${Otp}</b>` // html body
+        text: emailText, // plain text body
+        html: emailBody // html body
     };
 
     // Send the email
